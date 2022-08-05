@@ -1,0 +1,14 @@
+<launch>
+    <!-- STATIC TF -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_rplidar_link" args="0 0 0.1 0 0 0 1 base_link rplidar_link" />
+
+    <!-- PX4 SITL & GAZEBO-->
+    <include file="$(find px4_navigation)/launch/px4_sitl_gazebo.launch"/>
+
+    <!-- RF2O -->
+    <!--include file="$(find px4_navigation)/launch/rf2o_laser_odometry.launch"/-->
+
+    <!-- MAVROS -->
+    <include file="$(find px4_navigation)/launch/px4_mavros.launch"/>
+
+</launch>
