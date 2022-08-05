@@ -18,14 +18,19 @@ class px4Command:
         self.odom_data = Odometry()
 
         self.sp = PositionTarget()
+        # set the flag to use z-position & x,y,yaw-velocity setpoints
+        self.sp.type_mask = int('011111100011', 2)
+        self.sp.coordinate_frame = 8 # BODY_NED
+        self.sp.position.z = self.fly_height
 
         rospy.Subscriber("/mavros/state", State, self.stateCb)
         rospy.Subscriber("/cmd_vel", Twist, self.velCb)
         rospy.Subscriber("/mavros/local_position/odom", Odometry, self.odomCb)
 
-        self.vel_pub = rospy.Publisher("/mavros/setpoint_velocity/cmd_vel_unstamped", Twist, queue_size=1)
+        #self.vel_pub = rospy.Publisher("/mavros/setpoint_velocity/cmd_vel_unstamped", Twist, queue_size=1)
         self.gp_origin_pub = rospy.Publisher("/mavros/global_position/set_gp_origin", GeoPointStamped, queue_size=1, latch = True)
         self.local_pose_pub = rospy.Publisher("/mavros/setpoint_position/local", PoseStamped, queue_size=1)
+        self.sp_pub = rospy.PublisherPublisher("/mavros/setpoint_raw/local", PositionTarget, queue_size=1)
 
     def stateCb(self, msg):
         self.state = msg
@@ -35,7 +40,10 @@ class px4Command:
 
     def velCb(self, msg):
         if self.fly:
-            self.vel_pub.publish(msg)
+            self.sp.velocity.x = msg.linear.x
+            self.sp.velocity.y = msg.linear.y
+            self.sp.yaw_rate = msg.angular.z
+            self.sp_pub.publish(self.sp)
 
     def setArm(self, arm):
         rospy.wait_for_service("/mavros/cmd/arming")
@@ -153,8 +161,6 @@ if __name__ == '__main__':
     vehicle.setOffboardMode()
     vehicle.setArm(True)
     vehicle.takeOff()
-
-    #rospy.sleep(10)
 
     #vehicle.setHoldMode()
     #vehicle.setLand()
