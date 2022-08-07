@@ -15,10 +15,6 @@
     <include file="$(find px4_navigation)/launch/polygon_filter.launch"/>
 
     <!-- JOY -->
-    <node pkg="joy" type="joy_node" name="joy_node"/>
-    <node pkg="px4_navigation" type="joy_cmd.py" name="joy_cmd"/>
-
-    <!-- RVIZ -->
-    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find px4_navigation)/params/rviz/manual.rviz" />
-
+    <!--node pkg="joy" type="joy_node" name="joy_node"/>
+    <node pkg="px4_navigation" type="joy_cmd.py" name="joy_cmd"/-->
 </launch>

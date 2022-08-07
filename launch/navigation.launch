@@ -1,0 +1,20 @@
+<launch>
+    <!-- Arguments -->
+    <arg name="open_rviz" default="true"/>
+    <arg name="map_file" default="$(find px4_navigation)/maps/map.yaml"/>
+
+    <!-- Map server -->
+    <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+
+    <!-- AMCL -->
+    <include file="$(find px4_navigation)/launch/amcl.launch"/>
+
+    <!-- move_base -->
+    <include file="$(find px4_navigation)/launch/move_base.launch"/>
+
+    <!-- rviz -->
+    <group if="$(arg open_rviz)"> 
+        <node pkg="rviz" type="rviz" name="rviz" required="true"
+            args="-d $(find px4_navigation)/params/rviz/navigation.rviz"/>
+    </group>
+</launch>
