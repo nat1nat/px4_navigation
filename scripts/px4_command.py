@@ -6,13 +6,16 @@ from nav_msgs.msg import Odometry
 from mavros_msgs.msg import State, PositionTarget
 from mavros_msgs.srv import CommandBool, CommandBoolRequest, SetMode, SetModeRequest, CommandHome
 
+import math
+from tf.transformations import euler_from_quaternion
+
 LATITUDE = 13.947494
 LONGITUDE = 100.603394
 
 class px4Command:
     def __init__(self):
         self.fly = False
-        self.fly_height = 1.0
+        self.fly_height = 0.75
 
         self.state = State()
         self.odom_data = Odometry()
@@ -20,8 +23,11 @@ class px4Command:
         self.sp = PositionTarget()
         # set the flag to use z-position & x,y,yaw-velocity setpoints
         self.sp.type_mask = int('011111100011', 2)
-        self.sp.coordinate_frame = 8 # BODY_NED
+        self.sp.coordinate_frame = 1 #LOCAL_NED
         self.sp.position.z = self.fly_height
+
+        self.hold_x = 0.0
+        self.hold_y = 0.0
 
         rospy.Subscriber("/mavros/state", State, self.stateCb)
         rospy.Subscriber("/cmd_vel", Twist, self.velCb)
@@ -30,7 +36,7 @@ class px4Command:
         #self.vel_pub = rospy.Publisher("/mavros/setpoint_velocity/cmd_vel_unstamped", Twist, queue_size=1)
         self.gp_origin_pub = rospy.Publisher("/mavros/global_position/set_gp_origin", GeoPointStamped, queue_size=1, latch = True)
         self.local_pose_pub = rospy.Publisher("/mavros/setpoint_position/local", PoseStamped, queue_size=1)
-        self.sp_pub = rospy.PublisherPublisher("/mavros/setpoint_raw/local", PositionTarget, queue_size=1)
+        self.sp_pub = rospy.Publisher("/mavros/setpoint_raw/local", PositionTarget, queue_size=1)
 
     def stateCb(self, msg):
         self.state = msg
@@ -40,9 +46,31 @@ class px4Command:
 
     def velCb(self, msg):
         if self.fly:
-            self.sp.velocity.x = msg.linear.x
-            self.sp.velocity.y = msg.linear.y
-            self.sp.yaw_rate = msg.angular.z
+
+            phi = (-1)*euler_from_quaternion([self.odom_data.pose.pose.orientation.x,
+                                            self.odom_data.pose.pose.orientation.y,
+                                            self.odom_data.pose.pose.orientation.z,
+                                            self.odom_data.pose.pose.orientation.w])[2]
+            x_dot = msg.linear.x
+            y_dot = msg.linear.y
+            
+            xl_dot = x_dot*math.cos(phi) + y_dot*math.sin(phi)
+            yl_dot = y_dot*math.cos(phi) - x_dot*math.sin(phi)
+
+            if((abs(xl_dot) < 0.01) and (abs(yl_dot) < 0.01)):
+                self.sp.type_mask = int('011111111000', 2)
+                self.sp.position.x = self.hold_x
+                self.sp.position.y = self.hold_y
+                self.sp.yaw_rate = msg.angular.z
+            else:
+                self.sp.type_mask = int('011111100011', 2)
+                self.sp.velocity.x = xl_dot
+                self.sp.velocity.y = yl_dot
+                self.sp.yaw_rate = msg.angular.z
+
+                self.hold_x = self.odom_data.pose.pose.position.x
+                self.hold_y = self.odom_data.pose.pose.position.y
+
             self.sp_pub.publish(self.sp)
 
     def setArm(self, arm):
@@ -158,11 +186,13 @@ if __name__ == '__main__':
         rate.sleep()
 
     # Start mission!
-    vehicle.setOffboardMode()
-    vehicle.setArm(True)
-    vehicle.takeOff()
+    try:
+        vehicle.setOffboardMode()
+        vehicle.setArm(True)
+        vehicle.takeOff()
 
-    #vehicle.setHoldMode()
-    #vehicle.setLand()
+    except KeyboardInterrupt:
+        vehicle.setLand()
+        print("Ending the program...")
 
     rospy.spin()

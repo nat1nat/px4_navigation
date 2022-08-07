@@ -15,8 +15,8 @@ class joyObj:
         if (msg.buttons[4] == 1):
             self.lb = True
         else: self.lb = False
-        self.vel_data.linear.x = msg.axes[1]*0.5
-        self.vel_data.linear.y = msg.axes[0]*0.5
+        self.vel_data.linear.x = msg.axes[1]*0.2
+        self.vel_data.linear.y = msg.axes[0]*0.2
         self.vel_data.angular.z = msg.axes[3]*0.5
 
     def pubVel(self):
