@@ -1,6 +1,6 @@
 <launch>
     <!-- STATIC TF -->
-    <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_rplidar_link" args="0 0 0.1 0 0 0 1 base_link rplidar_link" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_rplidar_link" args="0 0 0.1 0 0 0 1 base_link rplidar_link"/>
 
     <!-- PX4 SITL & GAZEBO-->
     <include file="$(find px4_navigation)/launch/px4_sitl_gazebo.launch"/>
@@ -10,5 +10,15 @@
 
     <!-- MAVROS -->
     <include file="$(find px4_navigation)/launch/px4_mavros.launch"/>
+
+    <!-- LASER_FILTER -->
+    <include file="$(find px4_navigation)/launch/polygon_filter.launch"/>
+
+    <!-- JOY -->
+    <node pkg="joy" type="joy_node" name="joy_node"/>
+    <node pkg="px4_navigation" type="joy_cmd.py" name="joy_cmd"/>
+
+    <!-- RVIZ -->
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find px4_navigation)/params/rviz/manual.rviz" />
 
 </launch>
