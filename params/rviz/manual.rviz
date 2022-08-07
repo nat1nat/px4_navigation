@@ -9,6 +9,7 @@ Panels:
         - /LaserScan1
         - /TF1
         - /TF1/Frames1
+        - /Map1
       Splitter Ratio: 0.5
     Tree Height: 746
   - Class: rviz/Selection
@@ -78,7 +79,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.05000000074505806
       Style: Flat Squares
-      Topic: /laser/scan
+      Topic: /scan_filtered
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -103,7 +104,7 @@ Visualization Manager:
         rplidar_link:
           Value: true
       Marker Alpha: 1
-      Marker Scale: 1
+      Marker Scale: 2.5
       Name: TF
       Show Arrows: true
       Show Axes: true
@@ -112,15 +113,25 @@ Visualization Manager:
         map:
           map_ned:
             {}
-        odom:
-          base_link:
-            base_link_frd:
+          odom:
+            base_link:
+              base_link_frd:
+                {}
+              rplidar_link:
+                {}
+            odom_ned:
               {}
-            rplidar_link:
-              {}
-          odom_ned:
-            {}
       Update Interval: 0
+      Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /map
+      Unreliable: false
+      Use Timestamp: false
       Value: true
   Enabled: true
   Global Options:
@@ -149,26 +160,20 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 10
+      Angle: 1.3149994611740112
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Field of View: 0.7853981852531433
-      Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.785398006439209
-      Target Frame: <Fixed Frame>
-      Yaw: 0.785398006439209
+      Scale: 56.58594512939453
+      Target Frame: base_link
+      X: -1.9953489303588867
+      Y: 2.8647513389587402
     Saved: ~
 Window Geometry:
   Displays:
